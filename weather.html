@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>天气小案例</title>
+	<script src="jquery.min.js"></script>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.head>h2{
+			text-align: center;
+			margin: 10px;
+			font-weight: bold;
+			color: darkgray;
+		}
+		.searchArea,
+		.adcodeArea{
+			width: 492px;
+			margin: 30px auto;
+		}
+		.txtBox{
+			display: inline-block;
+			width: 300px;
+			height: 40px;
+			float: left;
+			border-radius: 3px 0 0 3px;
+			border: 1px solid #3388ff;
+			padding: 0 5px;
+			outline: none;
+			text-align: center;
+		}
+		#search{
+			display: inline-block;
+			width: 180px;
+			height: 42px;
+			border-left: none;
+			border-radius: 0 3px 3px 0;
+			text-align: center;
+			text-decoration: none;
+			line-height: 40px;
+			color: #fff;
+			background: #3388ff;
+		}
+		.weatherArea{
+			width: 800px;
+			height: 350px;
+			margin: 0 auto; 
+		}
+		.weatherArea div{
+			width: 800px;
+			height: 50px;
+			text-align: center;
+		}
+		.weatherArea ul{
+			width: 199px;
+			height: 300px;
+			float: left;
+		}
+		.weatherArea ul>li{
+			width: 90%;
+			height: 60px;
+			margin: 0 5%;
+			line-height: 60px;
+			list-style: none;
+			text-align: center;
+			border-radius: 3px;
+		}
+		.weatherArea ul>li:nth-child(2n+1){
+			background: #fafafa;
+		}
+	</style>
+</head>
+<body>
+	<div class="head">
+		<h2>基于高德api天气查询</h2>
+		<div class="searchArea">
+			<input type="text" class="txtBox" placeholder="输入城市名以查询城市编码">
+			<a href="javascript:;" id="search">查询编码</a>
+		</div>
+		<div class="adcodeArea">
+		</div>
+	</div>
+	<div class="weatherArea">
+
+	</div>
+<script>
+$(function(){
+	//点击查询天气
+	$(".txtBox").mouseout(function(){
+		var address = $(".txtBox").val();
+		// console.log(address);
+		//查询城市编码
+		var adcode = "";
+		var searchAdcode = new XMLHttpRequest();
+		//请求行(发送到的地址)
+		searchAdcode.open("get","https://restapi.amap.com/v3/geocode/geo?key=5ec95915b9b7624fb95eb9e6c070664a&address="+address);
+		//请求头
+		//回调函数
+		searchAdcode.onreadystatechange = function searchcode(){
+			//判断请求是否成功
+			if (searchAdcode.readyState==4&&searchAdcode.status==200) {
+				//解析json数据
+				var adcodeInformation = JSON.parse(searchAdcode.responseText);
+				// console.log(adcodeInformation["geocodes"]["0"]["adcode"]);
+				adcode += adcodeInformation["geocodes"]["0"]["adcode"];
+				$(".adcodeArea").val(adcode);
+			}
+		}
+		//发送请求
+		searchAdcode.send();
+	})
+
+	$("#search").click(function(){
+		//查询天气
+		var adcode1=$(".adcodeArea").val();
+		var searchWeather = new XMLHttpRequest();
+		searchWeather.open("get","https://restapi.amap.com/v3/weather/weatherInfo?key=5ec95915b9b7624fb95eb9e6c070664a&extensions=all&city="+adcode1);
+		searchWeather.onreadystatechange = function(){
+			if (searchWeather.readyState==4&&searchWeather.status==200) {
+				var weatherInformation = JSON.parse(searchWeather.responseText);
+				var a = weatherInformation["forecasts"]["0"]["casts"];
+				var weatherHtml = "<div>"+weatherInformation["forecasts"]["0"]["province"]+"省-"+weatherInformation["forecasts"]["0"]["city"]+"</div>";
+				 	weatherHtml +="<ul><li>"+a["0"]["date"]+"</li><li>星期"+a["0"]["week"]+"</li><li>"+a["0"]["dayweather"]+"~"+a["0"]["nightweather"]+"</li><li>"+a["0"]["daytemp"]+"~"+a["0"]["nighttemp"]+"</li><li>"+a["0"]["daywind"]+"~"+a["0"]["nightwind"]+"</li></ul>";
+				 	weatherHtml +="<ul><li>"+a["1"]["date"]+"</li><li>星期"+a["1"]["week"]+"</li><li>"+a["1"]["dayweather"]+"~"+a["1"]["nightweather"]+"</li><li>"+a["1"]["daytemp"]+"~"+a["1"]["nighttemp"]+"</li><li>"+a["1"]["daywind"]+"~"+a["1"]["nightwind"]+"</li></ul>";
+				 	weatherHtml +="<ul><li>"+a["2"]["date"]+"</li><li>星期"+a["2"]["week"]+"</li><li>"+a["2"]["dayweather"]+"~"+a["2"]["nightweather"]+"</li><li>"+a["2"]["daytemp"]+"~"+a["2"]["nighttemp"]+"</li><li>"+a["2"]["daywind"]+"~"+a["2"]["nightwind"]+"</li></ul>";
+				 	weatherHtml +="<ul><li>"+a["3"]["date"]+"</li><li>星期"+a["3"]["week"]+"</li><li>"+a["3"]["dayweather"]+"~"+a["3"]["nightweather"]+"</li><li>"+a["3"]["daytemp"]+"~"+a["3"]["nighttemp"]+"</li><li>"+a["3"]["daywind"]+"~"+a["3"]["nightwind"]+"</li></ul>";
+				 	// console.log(weatherHtml);
+				$(".weatherArea").empty();
+				$(".weatherArea").append(weatherHtml);
+				}
+			}
+		searchWeather.send();
+	})
+})
+</script>
+</body>
+</html>
